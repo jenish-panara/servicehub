@@ -24,6 +24,10 @@ npm run dev:web      # Vite on :5173 (proxies /api -> :4000)
 - Auth: JWT access (15m) + refresh (7d); roles OWNER / DISPATCHER / TECHNICIAN
   via `requireRole`.
 - Env is validated in `src/config/env.js`; add new vars to `.env.example` too.
+  Cloudinary vars are optional — `src/config/cloudinary.js` exports
+  `cloudinaryConfigured` and upload endpoints return 503 without them.
+- Photos: POST/DELETE `/api/jobs/:jobId/photos` (multer memory storage →
+  Cloudinary stream, 5MB image limit). `kind` = "before" | "after".
 
 ## Layout
 

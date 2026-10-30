@@ -480,6 +480,7 @@ export default function DispatchBoard() {
             setAssignJob(job);
           }}
           onChangeStatus={(status) => changeStatus(detailJob, status)}
+          onChanged={loadJobs}
         />
       )}
     </div>

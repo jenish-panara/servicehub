@@ -6,6 +6,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import jobRoutes from "./modules/jobs/jobs.routes.js";
 import customerRoutes from "./modules/customers/customers.routes.js";
 import technicianRoutes from "./modules/technicians/technicians.routes.js";
+import photoRoutes from "./modules/photos/photos.routes.js";
 
 export function createApp() {
   const app = express();
@@ -17,6 +18,7 @@ export function createApp() {
 
   app.use("/api/auth", authRoutes);
   app.use("/api/jobs", jobRoutes);
+  app.use("/api/jobs/:jobId/photos", photoRoutes);
   app.use("/api/customers", customerRoutes);
   app.use("/api/technicians", technicianRoutes);
 

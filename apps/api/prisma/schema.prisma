@@ -111,6 +111,7 @@ model JobPhoto {
   jobId     String
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   url       String
+  publicId  String?
   kind      String   @default("after") // "before" | "after"
   createdAt DateTime @default(now())
 

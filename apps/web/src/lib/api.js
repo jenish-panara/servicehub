@@ -28,9 +28,11 @@ export class ApiError extends Error {
 }
 
 async function rawFetch(path, options) {
+  const isFormData = options.body instanceof FormData;
   const res = await fetch(`${BASE}${path}`, {
     headers: {
-      "Content-Type": "application/json",
+      // Let the browser set Content-Type with boundary for FormData
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(localStorage.getItem(ACCESS_KEY)
         ? { Authorization: `Bearer ${localStorage.getItem(ACCESS_KEY)}` }
         : {}),

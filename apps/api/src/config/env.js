@@ -18,4 +18,10 @@ export const env = {
     refreshTtl: process.env.REFRESH_TOKEN_TTL || "7d",
   },
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  // Optional: photo uploads are disabled with a clear error until configured.
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 };

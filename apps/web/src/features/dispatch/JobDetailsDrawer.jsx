@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+import { api } from "../../lib/api.js";
 import { initials, formatDate } from "../../lib/ui.js";
 
 /**
@@ -11,9 +13,43 @@ export default function JobDetailsDrawer({
   onClose,
   onAssignClick,
   onChangeStatus,
+  onChanged,
 }) {
   const status = job.status;
   const assignVisible = !job.technician && canDispatch && ["REQUESTED", "SCHEDULED"].includes(status);
+
+  const [photoKind, setPhotoKind] = useState("after");
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
+  const fileRef = useRef(null);
+
+  async function uploadPhoto(file) {
+    if (!file) return;
+    setPhotoBusy(true);
+    setPhotoError(null);
+    try {
+      const form = new FormData();
+      form.append("photo", file);
+      form.append("kind", photoKind);
+      await api(`/jobs/${job.id}/photos`, { method: "POST", body: form });
+      if (fileRef.current) fileRef.current.value = "";
+      onChanged?.();
+    } catch (err) {
+      setPhotoError(err.message);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function deletePhoto(photo) {
+    setPhotoError(null);
+    try {
+      await api(`/jobs/${job.id}/photos/${photo.id}`, { method: "DELETE" });
+      onChanged?.();
+    } catch (err) {
+      setPhotoError(err.message);
+    }
+  }
 
   return (
     <>
@@ -96,6 +132,68 @@ export default function JobDetailsDrawer({
           <div className="drawer-desc">
             <span className="drawer-key">Description</span>
             <p className="cm-sub mb-0 mt-1">{job.description || "No description added."}</p>
+          </div>
+
+          {/* Photos */}
+          <div className="mt-3 pt-2" style={{ borderTop: "1px solid #f1f5f9" }}>
+            <span className="drawer-key">Photos</span>
+            {photoError && <div className="alert alert-danger py-1 px-2 small mt-2 mb-0">{photoError}</div>}
+
+            {job.photos?.length > 0 ? (
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                {job.photos.map((photo) => (
+                  <div className="position-relative" key={photo.id}>
+                    <a href={photo.url} target="_blank" rel="noreferrer" title="Open full size">
+                      <img
+                        src={photo.url}
+                        alt={`${photo.kind} photo`}
+                        className="photo-thumb"
+                      />
+                    </a>
+                    <span className={`photo-kind ${photo.kind === "before" ? "photo-kind-before" : ""}`}>
+                      {photo.kind}
+                    </span>
+                    {canDispatch && (
+                      <button
+                        className="photo-del"
+                        title="Delete photo"
+                        onClick={() => deletePhoto(photo)}
+                      >
+                        <i className="bi bi-x"></i>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="cm-sub mb-0 mt-1">No photos yet.</p>
+            )}
+
+            <div className="d-flex align-items-center gap-2 mt-2">
+              <select
+                value={photoKind}
+                onChange={(e) => setPhotoKind(e.target.value)}
+                className="form-select form-select-sm"
+                style={{ width: 110 }}
+                title="Photo type"
+              >
+                <option value="after">After</option>
+                <option value="before">Before</option>
+              </select>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="form-control form-control-sm"
+                style={{ width: 200 }}
+                onChange={(e) => uploadPhoto(e.target.files[0])}
+                disabled={photoBusy}
+              />
+              {photoBusy && <div className="spinner-border spinner-border-sm text-primary"></div>}
+            </div>
+            <p className="cm-sub mt-1 mb-0" style={{ fontSize: "0.68rem" }}>
+              JPG/PNG up to 5MB — stored on Cloudinary.
+            </p>
           </div>
         </div>
 

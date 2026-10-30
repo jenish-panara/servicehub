@@ -47,7 +47,7 @@ Demo logins (after seeding, password `password123`):
 
 ## Roadmap
 
-- [ ] Photos on job completion (upload + storage)
+- [x] Photos on job completion (upload + Cloudinary storage, before/after)
 - [ ] Invoice generation (PDF) + Stripe payment links
 - [ ] Email notifications / reminders
 - [ ] Dashboard stats (revenue, overdue, top customers)
