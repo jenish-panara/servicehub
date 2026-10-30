@@ -28,6 +28,9 @@ npm run dev:web      # Vite on :5173 (proxies /api -> :4000)
   `cloudinaryConfigured` and upload endpoints return 503 without them.
 - Photos: POST/DELETE `/api/jobs/:jobId/photos` (multer memory storage →
   Cloudinary stream, 5MB image limit). `kind` = "before" | "after".
+  Photo routes live in `photos.routes.js`, mounted on `/api/jobs` BEFORE the
+  jobs router — nested-mount params (`app.use("/api/jobs/:jobId/photos", ...)`)
+  silently produced an undefined jobId, which Prisma turned into "any job".
 
 ## Layout
 

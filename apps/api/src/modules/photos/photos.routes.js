@@ -19,7 +19,7 @@ router.use(requireAuth);
 const kindSchema = z.object({ kind: z.enum(["before", "after"]).default("after") });
 
 router.post(
-  "/",
+  "/:jobId/photos",
   requireRole("OWNER", "DISPATCHER", "TECHNICIAN"),
   upload.single("photo"),
   async (req, res, next) => {
@@ -38,7 +38,7 @@ router.post(
   }
 );
 
-router.delete("/:photoId", requireRole("OWNER", "DISPATCHER"), async (req, res, next) => {
+router.delete("/:jobId/photos/:photoId", requireRole("OWNER", "DISPATCHER"), async (req, res, next) => {
   try {
     await deletePhoto(req, req.params.jobId, req.params.photoId);
     res.status(204).end();

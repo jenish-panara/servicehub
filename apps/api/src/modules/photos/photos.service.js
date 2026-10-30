@@ -16,6 +16,9 @@ export async function addPhoto(req, jobId, file, kind) {
     );
   }
   if (!file) throw new AppError(400, "Photo file is required");
+  // Prisma ignores undefined filters — an absent jobId would otherwise match
+  // an arbitrary job instead of failing.
+  if (!jobId) throw new AppError(400, "Job id is required");
 
   const job = await prisma.job.findFirst({ where: scopedWhere(req, { id: jobId }) });
   if (!job) throw new AppError(404, "Job not found");

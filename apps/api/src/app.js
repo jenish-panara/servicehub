@@ -17,8 +17,10 @@ export function createApp() {
   app.get("/health", (_req, res) => res.json({ ok: true }));
 
   app.use("/api/auth", authRoutes);
+  // Photos first: its two-segment paths (/:jobId/photos) can't collide with
+  // the jobs router's single-segment routes.
+  app.use("/api/jobs", photoRoutes);
   app.use("/api/jobs", jobRoutes);
-  app.use("/api/jobs/:jobId/photos", photoRoutes);
   app.use("/api/customers", customerRoutes);
   app.use("/api/technicians", technicianRoutes);
 
