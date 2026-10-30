@@ -1,7 +1,24 @@
 /* App-specific polish on top of Bootstrap */
 
+:root {
+  --sh-bg: #f4f6fa;
+  --sh-card: #ffffff;
+  --sh-navy: #142b52;
+  --sh-blue: #2563eb;
+  --sh-cyan: #06b6d4;
+  --sh-green: #16a34a;
+  --sh-orange: #f59e0b;
+  --sh-purple: #8b5cf6;
+  --sh-red: #dc2626;
+  --sh-text: #172033;
+  --sh-text-2: #64748b;
+  --sh-border: #e2e8f0;
+}
+
 body {
-  background-color: #f4f5f7;
+  background-color: var(--sh-bg);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--sh-text);
 }
 
 /* Sidebar */
@@ -103,6 +120,275 @@ body {
 .board-body::-webkit-scrollbar-thumb {
   background: #d3d9e3;
   border-radius: 3px;
+}
+
+/* ===== Dispatch board redesign ===== */
+
+.dsb-title-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--sh-navy);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sh-green);
+  display: inline-block;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+  }
+}
+
+/* Status tabs */
+.dsb-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.dsb-tabs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.dsb-tabs::-webkit-scrollbar-thumb {
+  background: #d3d9e3;
+  border-radius: 3px;
+}
+
+.dsb-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--sh-border);
+  background: var(--sh-card);
+  color: var(--sh-text-2);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dsb-tab:hover {
+  color: var(--sh-text);
+  border-color: #cbd5e1;
+}
+
+.dsb-tab.active {
+  background: var(--sh-navy);
+  border-color: var(--sh-navy);
+  color: #fff;
+}
+
+.dsb-tab .tab-icon {
+  font-size: 0.95rem;
+}
+
+.dsb-tab .tab-count {
+  background: var(--sh-bg);
+  color: var(--sh-text-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.dsb-tab.active .tab-count {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* Job cards */
+.jobcard {
+  background: var(--sh-card);
+  border: 1px solid var(--sh-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.jobcard:hover {
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.09);
+  transform: translateY(-1px);
+}
+
+.jc-section {
+  padding: 16px 20px;
+  min-width: 0;
+}
+
+.jc-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sh-text-2);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.jc-value {
+  font-size: 0.85rem;
+  color: var(--sh-text);
+  line-height: 1.45;
+}
+
+.jc-secondary {
+  font-size: 0.78rem;
+  color: var(--sh-text-2);
+}
+
+.jc-job-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: var(--sh-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.jc-job-id {
+  font-size: 0.72rem;
+  color: var(--sh-text-2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.jc-divider {
+  border-left: 1px solid var(--sh-border);
+}
+
+.tech-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  background: #eef1f6;
+}
+
+/* Status badges on cards */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Card action buttons */
+.jc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 132px;
+}
+
+.jc-btn {
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border: 1px solid var(--sh-border);
+  background: var(--sh-card);
+  color: var(--sh-text-2);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.jc-btn:hover:not(:disabled) {
+  color: var(--sh-text);
+  border-color: #cbd5e1;
+}
+
+.jc-btn:disabled {
+  opacity: 0.55;
+}
+
+.jc-btn-primary {
+  background: var(--sh-blue);
+  border-color: var(--sh-blue);
+  color: #fff;
+}
+
+.jc-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.jc-btn-danger {
+  color: var(--sh-red);
+}
+
+.jc-btn-danger:hover:not(:disabled) {
+  background: #fdecec;
+  border-color: #f3c1c1;
+  color: var(--sh-red);
+}
+
+/* Responsive job card: horizontal sections on desktop, stacked on mobile */
+.jobcard-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 992px) {
+  .jobcard-grid {
+    display: grid;
+    grid-template-columns: minmax(230px, 1.5fr) minmax(170px, 1.1fr) minmax(160px, 1fr) minmax(150px, 1fr) auto auto;
+    align-items: center;
+  }
+
+  .jc-section + .jc-section {
+    border-left: 1px solid var(--sh-border);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .jc-section {
+    padding: 14px 18px;
+  }
+
+  .jc-section + .jc-section {
+    border-top: 1px solid var(--sh-border);
+  }
+
+  .jc-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
 }
 
 .job-card {

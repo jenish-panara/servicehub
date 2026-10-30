@@ -1,27 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
+import { avatarColor, initials, formatDate } from "../../lib/ui.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import AssignModal from "./AssignModal.jsx";
 
 const STATUS_COLUMNS = ["REQUESTED", "ASSIGNED", "EN_ROUTE", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
 
-const COLUMN_STYLES = {
-  REQUESTED: { badge: "text-bg-warning", dot: "#f59e0b" },
-  ASSIGNED: { badge: "text-bg-primary", dot: "#4f6df5" },
-  EN_ROUTE: { badge: "text-bg-info", dot: "#0dcaf0" },
-  IN_PROGRESS: { badge: "text-bg-secondary", dot: "#8a93a5" },
-  COMPLETED: { badge: "text-bg-success", dot: "#10b981" },
-  CANCELLED: { badge: "text-bg-light text-muted border", dot: "#b0b8c5" },
+// Tab + badge visuals per status (colors from the board design spec).
+const STATUS_META = {
+  ALL: { label: "All", icon: "bi-list-ul", color: "#64748B", bg: "#EEF1F6" },
+  REQUESTED: { label: "Requested", icon: "bi-hourglass-split", color: "#F59E0B", bg: "#FEF3E2" },
+  ASSIGNED: { label: "Assigned", icon: "bi-person-check", color: "#2563EB", bg: "#EAF1FE" },
+  EN_ROUTE: { label: "En Route", icon: "bi-truck", color: "#06B6D4", bg: "#E5F8FB" },
+  IN_PROGRESS: { label: "In Progress", icon: "bi-play-fill", color: "#8B5CF6", bg: "#F1EBFE" },
+  COMPLETED: { label: "Completed", icon: "bi-check-circle", color: "#16A34A", bg: "#E8F7F0" },
+  CANCELLED: { label: "Cancelled", icon: "bi-x-circle", color: "#DC2626", bg: "#FDECEC" },
 };
 
-// Buttons the board offers, keyed by the NEXT status. Assigning happens in
-// the AssignModal, and INVOICED/PAID arrive with M4 (invoicing).
+// Card action buttons, keyed by the NEXT status. Assigning happens in the
+// AssignModal; INVOICED/PAID arrive with M4 (invoicing).
 const ACTION_LABELS = {
-  SCHEDULED: { label: "Schedule", icon: "bi-calendar-plus", class: "btn-outline-primary" },
-  CANCELLED: { label: "Cancel", icon: "bi-x-circle", class: "btn-outline-danger" },
-  EN_ROUTE: { label: "On the way", icon: "bi-truck", class: "btn-outline-info" },
-  IN_PROGRESS: { label: "Start work", icon: "bi-play-fill", class: "btn-outline-secondary" },
-  COMPLETED: { label: "Complete", icon: "bi-check-lg", class: "btn-outline-success" },
+  SCHEDULED: { label: "Schedule", icon: "bi-calendar-plus" },
+  CANCELLED: { label: "Cancel", icon: "bi-x-circle", danger: true },
+  EN_ROUTE: { label: "On the way", icon: "bi-truck" },
+  IN_PROGRESS: { label: "Start Work", icon: "bi-play-fill", primary: true },
+  COMPLETED: { label: "Complete", icon: "bi-check-lg", success: true },
 };
 
 // Statuses from which a technician can still be attached.
@@ -31,13 +34,14 @@ export default function DispatchBoard() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [meta, setMeta] = useState({ transitions: {}, technicians: [] });
+  const [statusFilter, setStatusFilter] = useState("all");
   const [techFilter, setTechFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [pendingJobId, setPendingJobId] = useState(null);
-  const [assignJob, setAssignJob] = useState(null); // job being assigned in the modal
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [assignJob, setAssignJob] = useState(null);
 
   const canDispatch = user?.role === "OWNER" || user?.role === "DISPATCHER";
 
@@ -105,46 +109,83 @@ export default function DispatchBoard() {
     );
   }
 
-  const visibleJobs = jobs.filter((job) => {
+  const techFiltered = jobs.filter((job) => {
     if (techFilter === "all") return true;
     if (techFilter === "") return !job.technicianId;
     return job.technicianId === techFilter;
   });
 
-  const statusCounts = Object.fromEntries(
-    STATUS_COLUMNS.map((status) => [status, visibleJobs.filter((j) => j.status === status).length])
-  );
+  const statusFiltered =
+    statusFilter === "all" ? techFiltered : techFiltered.filter((j) => j.status === statusFilter);
+
+  const query = search.trim().toLowerCase();
+  const visibleJobs = query
+    ? statusFiltered.filter(
+        (job) =>
+          job.title.toLowerCase().includes(query) ||
+          job.customer?.name?.toLowerCase().includes(query) ||
+          job.address?.toLowerCase().includes(query)
+      )
+    : statusFiltered;
+
+  const statusCounts = Object.fromEntries([
+    ["all", techFiltered.length],
+    ...STATUS_COLUMNS.map((status) => [
+      status,
+      techFiltered.filter((j) => j.status === status).length,
+    ]),
+  ]);
 
   return (
     <div className="container-fluid p-4">
+      {/* Header */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-          <h1 className="h4 mb-0 fw-semibold">Dispatch board</h1>
-          <div className="text-muted small mt-1">
-            {visibleJobs.length} job{visibleJobs.length === 1 ? "" : "s"} shown · auto-refreshes
-            every 30s
+        <div className="d-flex align-items-center gap-3">
+          <span className="dsb-title-icon">
+            <i className="bi bi-truck"></i>
+          </span>
+          <div>
+            <h1 className="h4 mb-0 fw-semibold">Dispatch Board</h1>
+            <div className="jc-secondary d-flex align-items-center gap-2 mt-1">
+              <span className="live-dot"></span>
+              {visibleJobs.length} job{visibleJobs.length === 1 ? "" : "s"} shown · auto-refreshes
+              every 30s
+            </div>
           </div>
         </div>
-        <div className="d-flex gap-2 align-items-center">
+
+        <div className="d-flex flex-wrap gap-2 align-items-center">
           <div className="position-relative">
-            <i className="bi bi-person-badge position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-            <select
-              value={techFilter}
-              onChange={(e) => setTechFilter(e.target.value)}
-              className="form-select form-select-sm ps-5"
-              style={{ width: 200 }}
-            >
-              <option value="all">All technicians</option>
-              <option value="">Unassigned</option>
-              {meta.technicians.map((tech) => (
-                <option key={tech.id} value={tech.id}>
-                  {tech.name}
-                </option>
-              ))}
-            </select>
+            <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search jobs, customers…"
+              className="form-control form-control-sm ps-5"
+              style={{ width: 230 }}
+            />
           </div>
-          <button onClick={loadJobs} className="btn btn-light btn-sm border" title="Refresh now">
+          <select
+            value={techFilter}
+            onChange={(e) => setTechFilter(e.target.value)}
+            className="form-select form-select-sm"
+            style={{ width: 170 }}
+          >
+            <option value="all">All Technicians</option>
+            <option value="">Unassigned</option>
+            {meta.technicians.map((tech) => (
+              <option key={tech.id} value={tech.id}>
+                {tech.name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={loadJobs}
+            className="btn btn-sm border bg-white d-flex align-items-center gap-1"
+            title="Refresh now"
+          >
             <i className="bi bi-arrow-clockwise"></i>
+            <span className="d-none d-md-inline">Refresh</span>
           </button>
         </div>
       </div>
@@ -162,23 +203,22 @@ export default function DispatchBoard() {
       )}
 
       {/* Status tabs */}
-      <div className="segmented mb-3 flex-wrap" role="group">
-        <button
-          onClick={() => setStatusFilter("all")}
-          className={statusFilter === "all" ? "active" : ""}
-        >
-          All <span className="opacity-75">({visibleJobs.length})</span>
-        </button>
-        {STATUS_COLUMNS.map((status) => (
-          <button
-            key={status}
-            onClick={() => setStatusFilter(status)}
-            className={statusFilter === status ? "active" : ""}
-          >
-            {status.replace("_", " ")}{" "}
-            <span className="opacity-75">({statusCounts[status]})</span>
-          </button>
-        ))}
+      <div className="dsb-tabs mb-4">
+        {["all", ...STATUS_COLUMNS].map((key) => {
+          const tab = STATUS_META[key.toUpperCase()];
+          const isActive = statusFilter === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setStatusFilter(key)}
+              className={`dsb-tab ${isActive ? "active" : ""}`}
+            >
+              <i className={`bi ${tab.icon} tab-icon`}></i>
+              {tab.label}
+              <span className="tab-count">{statusCounts[key]}</span>
+            </button>
+          );
+        })}
       </div>
 
       {loading && jobs.length === 0 && (
@@ -188,176 +228,143 @@ export default function DispatchBoard() {
         </div>
       )}
 
-      {statusFilter === "all" ? (
-      /* 3 columns per row, wrapping, page scrolls vertically */
-      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
-        {STATUS_COLUMNS.map((status) => {
-          const columnJobs = visibleJobs.filter((j) => j.status === status);
-          const style = COLUMN_STYLES[status];
+      {/* Job cards */}
+      {!loading && visibleJobs.length === 0 && (
+        <div className="text-center py-5">
+          <i className="bi bi-inbox fs-1 text-secondary"></i>
+          <p className="text-muted mt-2 mb-0">
+            {query
+              ? `No jobs match "${search}".`
+              : `No ${STATUS_META[statusFilter.toUpperCase()].label.toLowerCase()} jobs${techFilter !== "all" ? " for this technician" : ""}.`}
+          </p>
+        </div>
+      )}
+
+      <div className="d-flex flex-column gap-3">
+        {visibleJobs.map((job) => {
+          const badge = STATUS_META[job.status];
+          const assignVisible =
+            !job.technician && canDispatch && ASSIGNABLE_STATUSES.includes(job.status);
           return (
-            <div className="col" key={status}>
-              <div className="board-card h-100">
-                <div className="board-head d-flex align-items-center gap-2">
-                  <span className="status-dot" style={{ background: style.dot }}></span>
-                  <span className="fw-semibold text-uppercase">
-                    {status.replace("_", " ")}
+            <div className="jobcard" key={job.id}>
+              <div className="jobcard-grid">
+                {/* A. Job info */}
+                <div className="jc-section d-flex align-items-center gap-3">
+                  <span className="jc-job-icon">
+                    <i className="bi bi-hammer"></i>
                   </span>
-                  <span className="badge rounded-pill text-bg-light border ms-auto">
-                    {columnJobs.length}
-                  </span>
-                </div>
-
-                <div className="d-flex flex-column gap-2 p-2 board-body">
-                  {columnJobs.map((job) => (
-                    <div className="card border shadow-sm job-card" key={job.id}>
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-start gap-2">
-                          <p className="card-text small fw-semibold mb-1">{job.title}</p>
-                          <span className={`badge ${style.badge}`} style={{ fontSize: "0.62rem" }}>
-                            {status.replace("_", " ")}
-                          </span>
-                        </div>
-                        <p className="card-text text-muted mb-2" style={{ fontSize: "0.78rem" }}>
-                          <i className="bi bi-person me-1"></i>
-                          {job.customer?.name}
-                          <br />
-                          <i className="bi bi-geo-alt me-1"></i>
-                          {job.address}
-                        </p>
-
-                        {job.technician ? (
-                          <div className="assigned-chip mb-2">
-                            <i className="bi bi-tools me-1"></i>
-                            {job.technician.name}
-                          </div>
-                        ) : canDispatch && ASSIGNABLE_STATUSES.includes(job.status) ? (
-                          <button
-                            onClick={() => setAssignJob(job)}
-                            disabled={pendingJobId === job.id}
-                            className="btn btn-sm btn-outline-primary w-100 mb-2"
-                            style={{ fontSize: "0.75rem" }}
-                          >
-                            <i className="bi bi-person-plus me-1"></i>
-                            Assign technician
-                          </button>
-                        ) : null}
-
-                        <div className="d-flex flex-wrap gap-1">
-                          {metaNext(status).map((next) => {
-                            const action = ACTION_LABELS[next];
-                            if (!action) return null;
-                            return (
-                              <button
-                                key={next}
-                                onClick={() => changeStatus(job, next)}
-                                disabled={pendingJobId === job.id}
-                                className={`btn btn-sm border ${action.class}`}
-                                style={{ fontSize: "0.72rem", padding: "2px 8px" }}
-                              >
-                                <i className={`bi ${action.icon} me-1`}></i>
-                                {action.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                  <div>
+                    <div className="fw-semibold" style={{ fontSize: "0.95rem" }}>
+                      {job.title}
                     </div>
-                  ))}
-
-                  {columnJobs.length === 0 && (
-                    <div className="text-center text-muted py-4" style={{ fontSize: "0.75rem" }}>
-                      {loading ? (
-                        <div className="spinner-border spinner-border-sm"></div>
-                      ) : (
+                    <div className="jc-job-id mt-1">
+                      #{job.id.slice(0, 8)}
+                      {job.scheduledFor && (
                         <>
-                          <i className="bi bi-inbox d-block fs-5 mb-1"></i>
-                          No jobs
+                          {" · "}
+                          <i className="bi bi-calendar me-1"></i>
+                          {formatDate(job.scheduledFor)}
                         </>
                       )}
                     </div>
+                  </div>
+                </div>
+
+                {/* B. Customer */}
+                <div className="jc-section">
+                  <div className="jc-label">Customer</div>
+                  <div className="jc-value">
+                    <i className="bi bi-person me-1"></i>
+                    {job.customer?.name}
+                  </div>
+                  <div className="jc-secondary text-truncate">
+                    <i className="bi bi-geo-alt me-1"></i>
+                    {job.address}
+                  </div>
+                </div>
+
+                {/* C. Schedule */}
+                <div className="jc-section">
+                  <div className="jc-label">Schedule</div>
+                  <div className="jc-value">
+                    <i className="bi bi-calendar3 me-1"></i>
+                    {job.scheduledFor ? formatDate(job.scheduledFor) : "Not scheduled"}
+                  </div>
+                  <div className="jc-secondary">
+                    {job.scheduledFor && (
+                      <>
+                        <i className="bi bi-clock me-1"></i>
+                        {new Date(job.scheduledFor).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* D. Technician */}
+                <div className="jc-section">
+                  <div className="jc-label">Technician</div>
+                  {job.technician ? (
+                    <div className="d-flex align-items-center gap-2 mt-1">
+                      <span
+                        className="tech-avatar"
+                        style={{ backgroundColor: avatarColor(job.technician.name) }}
+                      >
+                        {initials(job.technician.name)}
+                      </span>
+                      <span className="jc-value fw-medium">{job.technician.name}</span>
+                    </div>
+                  ) : assignVisible ? (
+                    <button
+                      onClick={() => setAssignJob(job)}
+                      disabled={pendingJobId === job.id}
+                      className="jc-btn w-100 mt-1"
+                    >
+                      <i className="bi bi-person-plus me-1"></i>Assign technician
+                    </button>
+                  ) : (
+                    <div className="jc-secondary mt-1">Unassigned</div>
                   )}
+                </div>
+
+                {/* E. Status */}
+                <div className="jc-section">
+                  <span
+                    className="status-badge"
+                    style={{ background: badge.bg, color: badge.color }}
+                  >
+                    <i className={`bi ${badge.icon}`}></i>
+                    {badge.label}
+                  </span>
+                </div>
+
+                {/* F. Actions */}
+                <div className="jc-section jc-actions">
+                  {metaNext(job.status).map((next) => {
+                    const action = ACTION_LABELS[next];
+                    if (!action) return null;
+                    return (
+                      <button
+                        key={next}
+                        onClick={() => changeStatus(job, next)}
+                        disabled={pendingJobId === job.id}
+                        className={`jc-btn ${action.primary ? "jc-btn-primary" : ""} ${
+                          action.danger ? "jc-btn-danger" : ""
+                        }`}
+                      >
+                        <i className={`bi ${action.icon} me-1`}></i>
+                        {action.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
-      ) : (
-      /* Single status selected: compact wide rows */
-      <div className="card border-0 shadow-sm">
-        <div className="card-body p-2">
-          {visibleJobs.filter((j) => j.status === statusFilter).length === 0 ? (
-            <div className="text-center text-muted py-5">
-              <i className="bi bi-inbox d-block fs-2 mb-2"></i>
-              No {statusFilter.replace("_", " ").toLowerCase()} jobs
-              {techFilter !== "all" ? " for this technician" : ""}.
-            </div>
-          ) : (
-            visibleJobs
-              .filter((j) => j.status === statusFilter)
-              .map((job) => (
-                <div className="card border shadow-sm job-card mb-2" key={job.id}>
-                  <div className="card-body p-3 d-flex flex-wrap align-items-center gap-3">
-                    <div className="flex-grow-1" style={{ minWidth: 200 }}>
-                      <div className="fw-semibold small">{job.title}</div>
-                      <div className="text-muted" style={{ fontSize: "0.78rem" }}>
-                        <i className="bi bi-person me-1"></i>
-                        {job.customer?.name}
-                        <span className="mx-1">·</span>
-                        <i className="bi bi-geo-alt me-1"></i>
-                        {job.address}
-                      </div>
-                    </div>
-                    <div>
-                      {job.technician ? (
-                        <span className="assigned-chip">
-                          <i className="bi bi-tools me-1"></i>
-                          {job.technician.name}
-                        </span>
-                      ) : canDispatch && ASSIGNABLE_STATUSES.includes(job.status) ? (
-                        <button
-                          onClick={() => setAssignJob(job)}
-                          disabled={pendingJobId === job.id}
-                          className="btn btn-sm btn-outline-primary"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          <i className="bi bi-person-plus me-1"></i>
-                          Assign
-                        </button>
-                      ) : (
-                        <span className="text-muted" style={{ fontSize: "0.78rem" }}>
-                          Unassigned
-                        </span>
-                      )}
-                    </div>
-                    <span className={`badge ${COLUMN_STYLES[statusFilter].badge}`}>
-                      {statusFilter.replace("_", " ")}
-                    </span>
-                    <div className="d-flex flex-wrap gap-1">
-                      {metaNext(statusFilter).map((next) => {
-                        const action = ACTION_LABELS[next];
-                        if (!action) return null;
-                        return (
-                          <button
-                            key={next}
-                            onClick={() => changeStatus(job, next)}
-                            disabled={pendingJobId === job.id}
-                            className={`btn btn-sm border ${action.class}`}
-                            style={{ fontSize: "0.72rem", padding: "2px 8px" }}
-                          >
-                            <i className={`bi ${action.icon} me-1`}></i>
-                            {action.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))
-          )}
-        </div>
-      </div>
-      )}
 
       {assignJob && (
         <AssignModal
