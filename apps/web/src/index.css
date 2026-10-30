@@ -65,3 +65,139 @@ body {
   box-shadow: 0 0.35rem 0.7rem rgba(0, 0, 0, 0.12) !important;
   transform: translateY(-1px);
 }
+
+/* Stat cards */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #edf0f4;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #8a93a5;
+}
+
+/* Segmented filter control */
+.segmented {
+  display: inline-flex;
+  background: #fff;
+  border: 1px solid #e3e7ee;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.segmented button {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 5px 16px;
+  font-size: 0.82rem;
+  color: #5b6472;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.segmented button:hover {
+  color: #1c2333;
+}
+
+.segmented button.active {
+  background: #1c2333;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Skill chips */
+.skill-chip {
+  background: #f1f3f9;
+  color: #3f4756;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Status pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.status-active {
+  background: #e8f7f0;
+  color: #0e9f6e;
+}
+
+.status-active .status-dot {
+  background: #10b981;
+}
+
+.status-inactive {
+  background: #f1f3f7;
+  color: #8a93a5;
+}
+
+.status-inactive .status-dot {
+  background: #b0b8c5;
+}
+
+/* Table polish */
+.tech-table thead th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a93a5;
+  font-weight: 600;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.row-inactive td {
+  opacity: 0.55;
+}
+
+/* Action buttons reveal on row hover */
+.row-actions {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+tr:hover .row-actions {
+  opacity: 1;
+}

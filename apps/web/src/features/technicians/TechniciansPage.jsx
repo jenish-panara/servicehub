@@ -7,10 +7,17 @@ import { useAuth } from "../auth/AuthContext.jsx";
 
 const EMPTY_FORM = { name: "", phone: "", skills: "", zone: "" };
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "active", label: "Active" },
+  { key: "inactive", label: "Inactive" },
+];
+
 export default function TechniciansPage() {
   const { user } = useAuth();
   const [technicians, setTechnicians] = useState([]);
-  const [filter, setFilter] = useState("all"); // all | active | inactive
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modal, setModal] = useState(null);
@@ -18,18 +25,41 @@ export default function TechniciansPage() {
 
   const isOwner = user?.role === "OWNER";
 
-  function refresh(activeParam) {
+  // The API filters by ?active=true|false — map our filter keys to that.
+  function loadList(activeFilter) {
     setLoading(true);
-    const query = activeParam && activeParam !== "all" ? `?active=${activeParam}` : "";
+    setError(null);
+    const query =
+      activeFilter === "all" ? "" : `?active=${activeFilter === "active" ? "true" : "false"}`;
     return api(`/technicians${query}`)
       .then(setTechnicians)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }
 
+  // Stats always come from the unfiltered list so the counts stay truthful.
+  function loadStats() {
+    return api("/technicians").then((all) =>
+      setStats({
+        total: all.length,
+        active: all.filter((t) => t.isActive).length,
+        inactive: all.filter((t) => !t.isActive).length,
+      })
+    );
+  }
+
   useEffect(() => {
-    refresh(filter);
+    loadList(filter);
   }, [filter]);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  function refreshAll() {
+    loadList(filter);
+    loadStats();
+  }
 
   async function onSave(form) {
     setBusy(true);
@@ -49,7 +79,7 @@ export default function TechniciansPage() {
       const path = modal.mode === "edit" ? `/technicians/${modal.technician.id}` : "/technicians";
       await api(path, { method, body: JSON.stringify(payload) });
       setModal(null);
-      await refresh(filter);
+      refreshAll();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -64,7 +94,7 @@ export default function TechniciansPage() {
         method: "PATCH",
         body: JSON.stringify({ isActive: !technician.isActive }),
       });
-      await refresh(filter);
+      refreshAll();
     } catch (err) {
       setError(err.message);
     }
@@ -76,40 +106,73 @@ export default function TechniciansPage() {
         icon="bi-person-badge"
         iconColor="success"
         title="Technicians"
-        subtitle={`${technicians.length} ${technicians.length === 1 ? "technician" : "technicians"} shown`}
+        subtitle="Manage your field team, skills and zones"
         actions={
-          <>
-            <div className="btn-group btn-group-sm" role="group">
-              {[
-                { key: "all", label: "All" },
-                { key: "active", label: "Active" },
-                { key: "inactive", label: "Inactive" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setFilter(tab.key)}
-                  className={`btn ${filter === tab.key ? "btn-dark" : "btn-light border"}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setModal({ mode: "create" })}
-              className="btn btn-primary btn-sm d-flex align-items-center gap-1"
-            >
-              <i className="bi bi-plus-lg"></i>Add technician
-            </button>
-          </>
+          <button
+            onClick={() => setModal({ mode: "create" })}
+            className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+          >
+            <i className="bi bi-plus-lg"></i>Add technician
+          </button>
         }
       />
 
+      {/* Stats */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-4">
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: "#eef1fe", color: "#4f6df5" }}>
+              <i className="bi bi-people"></i>
+            </div>
+            <div>
+              <div className="stat-value">{stats.total}</div>
+              <div className="stat-label">Total technicians</div>
+            </div>
+          </div>
+        </div>
+        <div className="col-12 col-md-4">
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: "#e8f7f0", color: "#10b981" }}>
+              <i className="bi bi-check-circle"></i>
+            </div>
+            <div>
+              <div className="stat-value">{stats.active}</div>
+              <div className="stat-label">Active now</div>
+            </div>
+          </div>
+        </div>
+        <div className="col-12 col-md-4">
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: "#f1f3f7", color: "#8a93a5" }}>
+              <i className="bi bi-pause-circle"></i>
+            </div>
+            <div>
+              <div className="stat-value">{stats.inactive}</div>
+              <div className="stat-label">Inactive</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {error && <div className="alert alert-danger py-2">{error}</div>}
+
+      {/* Segmented filter */}
+      <div className="segmented mb-3" role="group">
+        {FILTERS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
+            className={filter === tab.key ? "active" : ""}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       <div className="card border-0 shadow-sm">
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+          <table className="table table-hover align-middle mb-0 tech-table">
+            <thead>
               <tr>
                 <th className="ps-4">Technician</th>
                 <th>Phone</th>
@@ -121,7 +184,7 @@ export default function TechniciansPage() {
             </thead>
             <tbody>
               {technicians.map((technician) => (
-                <tr key={technician.id} className={technician.isActive ? "" : "opacity-50"}>
+                <tr key={technician.id} className={technician.isActive ? "" : "row-inactive"}>
                   <td className="ps-4">
                     <div className="d-flex align-items-center gap-2">
                       <span
@@ -133,30 +196,42 @@ export default function TechniciansPage() {
                       <span className="fw-medium">{technician.name}</span>
                     </div>
                   </td>
-                  <td className="text-muted">{technician.phone}</td>
+                  <td className="text-muted">
+                    <i className="bi bi-telephone me-1" style={{ fontSize: "0.75rem" }}></i>
+                    {technician.phone}
+                  </td>
                   <td>
                     <div className="d-flex flex-wrap gap-1">
                       {technician.skills.map((skill) => (
-                        <span key={skill} className="badge rounded-pill text-bg-light border">
+                        <span key={skill} className="skill-chip">
                           {skill}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="text-muted">{technician.zone || "—"}</td>
+                  <td className="text-muted">
+                    {technician.zone ? (
+                      <>
+                        <i className="bi bi-geo-alt me-1" style={{ fontSize: "0.8rem" }}></i>
+                        {technician.zone}
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td>
                     {technician.isActive ? (
-                      <span className="badge bg-success-subtle text-success fw-normal">
-                        <i className="bi bi-circle-fill" style={{ fontSize: "0.4rem" }}></i> Active
+                      <span className="status-pill status-active">
+                        <span className="status-dot"></span>Active
                       </span>
                     ) : (
-                      <span className="badge bg-secondary-subtle text-secondary fw-normal">
-                        Inactive
+                      <span className="status-pill status-inactive">
+                        <span className="status-dot"></span>Inactive
                       </span>
                     )}
                   </td>
                   <td className="text-end pe-4">
-                    <div className="d-flex justify-content-end gap-1">
+                    <div className="d-flex justify-content-end gap-1 row-actions">
                       <button
                         onClick={() => setModal({ mode: "edit", technician })}
                         className="btn btn-light btn-sm border"
@@ -187,13 +262,19 @@ export default function TechniciansPage() {
         {!loading && technicians.length === 0 && (
           <div className="text-center py-5">
             <i className="bi bi-person-badge fs-1 text-secondary"></i>
-            <p className="text-muted mt-2 mb-3">No technicians here yet.</p>
-            <button
-              onClick={() => setModal({ mode: "create" })}
-              className="btn btn-outline-primary btn-sm"
-            >
-              Add your first technician
-            </button>
+            <p className="text-muted mt-2 mb-3">
+              {filter === "all"
+                ? "No technicians here yet."
+                : `No ${filter} technicians right now.`}
+            </p>
+            {filter === "all" && (
+              <button
+                onClick={() => setModal({ mode: "create" })}
+                className="btn btn-outline-primary btn-sm"
+              >
+                Add your first technician
+              </button>
+            )}
           </div>
         )}
       </div>
