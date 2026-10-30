@@ -4,17 +4,34 @@ import { avatarColor, initials, formatDate } from "../../lib/ui.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import AssignModal from "./AssignModal.jsx";
 
-const STATUS_COLUMNS = ["REQUESTED", "ASSIGNED", "EN_ROUTE", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
+const STATUS_COLUMNS = [
+  "REQUESTED",
+  "SCHEDULED",
+  "ASSIGNED",
+  "EN_ROUTE",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "CANCELLED",
+];
 
 // Tab + badge visuals per status (colors from the board design spec).
 const STATUS_META = {
   ALL: { label: "All", icon: "bi-list-ul", color: "#64748B", bg: "#EEF1F6" },
   REQUESTED: { label: "Requested", icon: "bi-hourglass-split", color: "#F59E0B", bg: "#FEF3E2" },
+  SCHEDULED: { label: "Scheduled", icon: "bi-calendar-check", color: "#6366F1", bg: "#EEF0FE" },
   ASSIGNED: { label: "Assigned", icon: "bi-person-check", color: "#2563EB", bg: "#EAF1FE" },
   EN_ROUTE: { label: "En Route", icon: "bi-truck", color: "#06B6D4", bg: "#E5F8FB" },
   IN_PROGRESS: { label: "In Progress", icon: "bi-play-fill", color: "#8B5CF6", bg: "#F1EBFE" },
   COMPLETED: { label: "Completed", icon: "bi-check-circle", color: "#16A34A", bg: "#E8F7F0" },
   CANCELLED: { label: "Cancelled", icon: "bi-x-circle", color: "#DC2626", bg: "#FDECEC" },
+};
+
+// Fallback so an unexpected status can never crash the whole board.
+const UNKNOWN_STATUS_META = {
+  label: "",
+  icon: "bi-question-circle",
+  color: "#64748B",
+  bg: "#EEF1F6",
 };
 
 // Card action buttons, keyed by the NEXT status. Assigning happens in the
@@ -242,7 +259,10 @@ export default function DispatchBoard() {
 
       <div className="d-flex flex-column gap-3">
         {visibleJobs.map((job) => {
-          const badge = STATUS_META[job.status];
+          const badge = STATUS_META[job.status] || {
+            ...UNKNOWN_STATUS_META,
+            label: job.status.replace("_", " "),
+          };
           const assignVisible =
             !job.technician && canDispatch && ASSIGNABLE_STATUSES.includes(job.status);
           return (
