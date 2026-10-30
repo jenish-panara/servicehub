@@ -11,6 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
+    "db:demo": "node prisma/demo-jobs.js",
     "test": "vitest run"
   },
   "dependencies": {
