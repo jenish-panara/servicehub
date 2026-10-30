@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
+import AssignModal from "./AssignModal.jsx";
 
 const STATUS_COLUMNS = ["REQUESTED", "ASSIGNED", "EN_ROUTE", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
 
@@ -13,9 +14,8 @@ const COLUMN_STYLES = {
   CANCELLED: { badge: "text-bg-light text-muted border", dot: "#b0b8c5" },
 };
 
-// Buttons the board offers, keyed by the NEXT status. ASSIGNED is handled by
-// the assign dropdown, and INVOICED/PAID arrive with M4 (invoicing), so they
-// are intentionally absent for now.
+// Buttons the board offers, keyed by the NEXT status. Assigning happens in
+// the AssignModal, and INVOICED/PAID arrive with M4 (invoicing).
 const ACTION_LABELS = {
   SCHEDULED: { label: "Schedule", icon: "bi-calendar-plus", class: "btn-outline-primary" },
   CANCELLED: { label: "Cancel", icon: "bi-x-circle", class: "btn-outline-danger" },
@@ -24,7 +24,7 @@ const ACTION_LABELS = {
   COMPLETED: { label: "Complete", icon: "bi-check-lg", class: "btn-outline-success" },
 };
 
-// Statuses from which a technician can still be attached via the dropdown.
+// Statuses from which a technician can still be attached.
 const ASSIGNABLE_STATUSES = ["REQUESTED", "SCHEDULED"];
 
 export default function DispatchBoard() {
@@ -36,6 +36,7 @@ export default function DispatchBoard() {
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [pendingJobId, setPendingJobId] = useState(null);
+  const [assignJob, setAssignJob] = useState(null); // job being assigned in the modal
 
   const canDispatch = user?.role === "OWNER" || user?.role === "DISPATCHER";
 
@@ -86,8 +87,10 @@ export default function DispatchBoard() {
     );
   }
 
-  function assign(job, technicianId) {
+  function doAssign(technicianId) {
+    const job = assignJob;
     const tech = meta.technicians.find((t) => t.id === technicianId);
+    setAssignJob(null);
     updateJob(
       api(`/jobs/${job.id}/assign`, {
         method: "POST",
@@ -101,9 +104,11 @@ export default function DispatchBoard() {
     );
   }
 
-  const visibleJobs = jobs.filter(
-    (job) => techFilter === "all" || job.technicianId === techFilter
-  );
+  const visibleJobs = jobs.filter((job) => {
+    if (techFilter === "all") return true;
+    if (techFilter === "") return !job.technicianId;
+    return job.technicianId === techFilter;
+  });
 
   return (
     <div className="container-fluid p-4">
@@ -151,69 +156,68 @@ export default function DispatchBoard() {
         </div>
       )}
 
-      <div className="row g-3 flex-nowrap board-scroll">
+      {loading && jobs.length === 0 && (
+        <div className="text-center text-muted py-5">
+          <div className="spinner-border spinner-border-sm me-2"></div>
+          Loading board…
+        </div>
+      )}
+
+      {/* 3 columns per row, wrapping, page scrolls vertically */}
+      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
         {STATUS_COLUMNS.map((status) => {
           const columnJobs = visibleJobs.filter((j) => j.status === status);
           const style = COLUMN_STYLES[status];
           return (
-            <div className="col-auto board-col" key={status}>
-              <div className="bg-light rounded-3 p-3 h-100 board-column">
-                <h2 className="text-uppercase small text-muted fw-semibold d-flex align-items-center gap-2 mb-3">
+            <div className="col" key={status}>
+              <div className="board-card h-100">
+                <div className="board-head d-flex align-items-center gap-2">
                   <span className="status-dot" style={{ background: style.dot }}></span>
-                  {status.replace("_", " ")}{" "}
-                  <span className="badge rounded-pill text-bg-light border">
+                  <span className="fw-semibold text-uppercase">
+                    {status.replace("_", " ")}
+                  </span>
+                  <span className="badge rounded-pill text-bg-light border ms-auto">
                     {columnJobs.length}
                   </span>
-                </h2>
-                <div className="d-flex flex-column gap-2">
+                </div>
+
+                <div className="d-flex flex-column gap-2 p-2">
                   {columnJobs.map((job) => (
-                    <div className="card shadow-sm job-card" key={job.id}>
+                    <div className="card border shadow-sm job-card" key={job.id}>
                       <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-start">
+                        <div className="d-flex justify-content-between align-items-start gap-2">
                           <p className="card-text small fw-semibold mb-1">{job.title}</p>
-                          <span className={`badge ${style.badge}`} style={{ fontSize: "0.65rem" }}>
+                          <span className={`badge ${style.badge}`} style={{ fontSize: "0.62rem" }}>
                             {status.replace("_", " ")}
                           </span>
                         </div>
                         <p className="card-text text-muted mb-2" style={{ fontSize: "0.78rem" }}>
                           <i className="bi bi-person me-1"></i>
                           {job.customer?.name}
-                          {job.address && (
-                            <>
-                              {" · "}
-                              <i className="bi bi-geo-alt me-1"></i>
-                              {job.address}
-                            </>
-                          )}
+                          <br />
+                          <i className="bi bi-geo-alt me-1"></i>
+                          {job.address}
                         </p>
 
-                        {canDispatch && ASSIGNABLE_STATUSES.includes(job.status) && (
-                          <select
-                            className="form-select form-select-sm mb-2"
-                            value={job.technicianId || ""}
-                            disabled={pendingJobId === job.id}
-                            onChange={(e) => e.target.value && assign(job, e.target.value)}
-                          >
-                            <option value="">
-                              {job.technician ? `↻ ${job.technician.name}` : "Assign technician…"}
-                            </option>
-                            {meta.technicians.map((tech) => (
-                              <option key={tech.id} value={tech.id}>
-                                {tech.name}
-                                {tech.zone ? ` · ${tech.zone}` : ""}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        {!canDispatch && job.technician && (
-                          <p className="mb-2" style={{ fontSize: "0.78rem" }}>
+                        {job.technician ? (
+                          <div className="assigned-chip mb-2">
                             <i className="bi bi-tools me-1"></i>
                             {job.technician.name}
-                          </p>
-                        )}
+                          </div>
+                        ) : canDispatch && ASSIGNABLE_STATUSES.includes(job.status) ? (
+                          <button
+                            onClick={() => setAssignJob(job)}
+                            disabled={pendingJobId === job.id}
+                            className="btn btn-sm btn-outline-primary w-100 mb-2"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            <i className="bi bi-person-plus me-1"></i>
+                            Assign technician
+                          </button>
+                        ) : null}
 
                         <div className="d-flex flex-wrap gap-1">
-                          {(metaNext(status) || []).map((next) => {
+                          {metaNext(status).map((next) => {
                             const action = ACTION_LABELS[next];
                             if (!action) return null;
                             return (
@@ -233,10 +237,18 @@ export default function DispatchBoard() {
                       </div>
                     </div>
                   ))}
+
                   {columnJobs.length === 0 && (
-                    <p className="text-muted text-center py-3 mb-0" style={{ fontSize: "0.75rem" }}>
-                      {loading ? "…" : "No jobs"}
-                    </p>
+                    <div className="text-center text-muted py-4" style={{ fontSize: "0.75rem" }}>
+                      {loading ? (
+                        <div className="spinner-border spinner-border-sm"></div>
+                      ) : (
+                        <>
+                          <i className="bi bi-inbox d-block fs-5 mb-1"></i>
+                          No jobs
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -244,6 +256,16 @@ export default function DispatchBoard() {
           );
         })}
       </div>
+
+      {assignJob && (
+        <AssignModal
+          job={assignJob}
+          technicians={meta.technicians}
+          busy={pendingJobId === assignJob.id}
+          onClose={() => setAssignJob(null)}
+          onAssign={doAssign}
+        />
+      )}
     </div>
   );
 }

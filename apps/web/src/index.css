@@ -52,19 +52,41 @@ body {
   font-size: 1.25rem;
 }
 
-/* Board columns */
-.board-column {
-  min-height: 300px;
+/* Board columns: 3 per row, wrapping, vertical page scroll */
+.board-card {
+  background: #fbfbfd;
+  border: 1px solid #e9ecf2;
+  border-radius: 14px;
+  min-height: 240px;
 }
 
-.board-scroll {
-  overflow-x: auto;
-  padding-bottom: 8px;
+.board-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e9ecf2;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: #5b6472;
 }
 
-.board-col {
-  width: 250px;
-  flex-shrink: 0;
+.assigned-chip {
+  display: inline-flex;
+  align-items: center;
+  background: #eef1fe;
+  color: #3f5bd5;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.assign-row {
+  border-radius: 10px;
+  margin: 2px 4px;
+  transition: background-color 0.12s;
+}
+
+.assign-row:hover {
+  background-color: #f6f8fc;
 }
 
 .job-card {
