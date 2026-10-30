@@ -159,19 +159,8 @@ body {
 /* Status tabs */
 .dsb-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-}
-
-.dsb-tabs::-webkit-scrollbar {
-  height: 5px;
-}
-
-.dsb-tabs::-webkit-scrollbar-thumb {
-  background: #d3d9e3;
-  border-radius: 3px;
 }
 
 .dsb-tab {
