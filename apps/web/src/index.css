@@ -1,8 +1,67 @@
-/* Small app-specific tweaks on top of Bootstrap */
+/* App-specific polish on top of Bootstrap */
+
 body {
-  background-color: #f5f6f8;
+  background-color: #f4f5f7;
 }
 
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #1c2333 0%, #171c29 100%);
+}
+
+.sidebar-link {
+  color: #9aa3b5;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.sidebar-link:hover {
+  color: #e6e9ef;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-link.active {
+  color: #fff;
+  background-color: rgba(79, 109, 245, 0.25);
+}
+
+/* Initials avatar */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Icon square in page headers */
+.page-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Board columns */
 .board-column {
   min-height: 300px;
+}
+
+.job-card {
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.job-card:hover {
+  box-shadow: 0 0.35rem 0.7rem rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-1px);
 }

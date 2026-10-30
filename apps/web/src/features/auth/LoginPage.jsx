@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("owner@demo.test");
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState(null);
@@ -14,6 +16,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {

@@ -2,9 +2,18 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { api, saveTokens, clearTokens, hasAccessToken } from "../../lib/api.js";
 
 const AuthContext = createContext(null);
+const USER_KEY = "servicehub_user";
+
+function loadStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem(USER_KEY)) || null;
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(loadStoredUser);
   const [loading, setLoading] = useState(hasAccessToken());
 
   useEffect(() => {
@@ -20,12 +29,14 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password }),
     });
     saveTokens(data);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setUser(data.user);
     return data;
   }
 
   async function logout() {
     clearTokens();
+    localStorage.removeItem(USER_KEY);
     setUser(null);
   }
 

@@ -26,8 +26,9 @@ export default function DispatchBoard() {
   }
 
   return (
-    <div className="container-fluid p-4">
-      <h1 className="h5 mb-4">Dispatch board</h1>
+    <div>
+      <div className="container-fluid p-4">
+        <h1 className="h5 mb-4">Dispatch board</h1>
       <div className="row g-3">
         {STATUS_COLUMNS.map((status) => {
           const columnJobs = jobs.filter((j) => j.status === status);
@@ -61,6 +62,7 @@ export default function DispatchBoard() {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );
