@@ -17,43 +17,47 @@ export default function Layout() {
   }
 
   return (
-    <div className="d-flex min-vh-100">
-      <aside className="sidebar d-flex flex-column flex-shrink-0 p-3">
-        <div className="d-flex align-items-center gap-2 mb-4 px-2">
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="d-flex align-items-center gap-2 sidebar-brand">
           <i className="bi bi-tools fs-4 text-primary"></i>
-          <span className="fs-5 fw-semibold text-white">ServiceHub</span>
+          <span className="fs-5 fw-semibold text-white sidebar-hide-sm">ServiceHub</span>
         </div>
 
-        <nav className="nav flex-column gap-1">
+        <nav className="sidebar-nav">
           {LINKS.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.end}
               className={({ isActive }) =>
-                `sidebar-link d-flex align-items-center gap-2 px-3 py-2 rounded-3 ${isActive ? "active" : ""}`
+                `sidebar-link d-flex align-items-center gap-2 ${isActive ? "active" : ""}`
               }
+              title={link.label}
             >
               <i className={`bi ${link.icon}`}></i>
-              {link.label}
+              <span className="sidebar-hide-sm">{link.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="mt-auto px-2">
+        <div className="sidebar-footer">
           {user && (
-            <div className="text-secondary small mb-2">
+            <div className="text-secondary small sidebar-user">
               <i className="bi bi-person-circle me-1"></i>
-              {user.name} · {user.role.toLowerCase()}
+              <span className="sidebar-hide-sm">
+                {user.name} · {user.role.toLowerCase()}
+              </span>
             </div>
           )}
-          <button onClick={onLogout} className="btn btn-outline-secondary btn-sm w-100">
-            <i className="bi bi-box-arrow-right me-1"></i>Logout
+          <button onClick={onLogout} className="btn btn-outline-secondary btn-sm" title="Logout">
+            <i className="bi bi-box-arrow-right"></i>
+            <span className="sidebar-hide-sm ms-1">Logout</span>
           </button>
         </div>
       </aside>
 
-      <main className="flex-grow-1 p-4 min-vh-100" style={{ overflowX: "auto" }}>
+      <main className="app-main">
         <Outlet />
       </main>
     </div>

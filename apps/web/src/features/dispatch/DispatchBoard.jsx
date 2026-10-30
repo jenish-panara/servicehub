@@ -15,15 +15,16 @@ const STATUS_COLUMNS = [
 ];
 
 // Tab + badge visuals per status (colors from the board design spec).
+// `short` is used on narrow screens so all tabs always fit on one line.
 const STATUS_META = {
-  ALL: { label: "All", icon: "bi-list-ul", color: "#64748B", bg: "#EEF1F6" },
-  REQUESTED: { label: "Requested", icon: "bi-hourglass-split", color: "#F59E0B", bg: "#FEF3E2" },
-  SCHEDULED: { label: "Scheduled", icon: "bi-calendar-check", color: "#6366F1", bg: "#EEF0FE" },
-  ASSIGNED: { label: "Assigned", icon: "bi-person-check", color: "#2563EB", bg: "#EAF1FE" },
-  EN_ROUTE: { label: "En Route", icon: "bi-truck", color: "#06B6D4", bg: "#E5F8FB" },
-  IN_PROGRESS: { label: "In Progress", icon: "bi-play-fill", color: "#8B5CF6", bg: "#F1EBFE" },
-  COMPLETED: { label: "Completed", icon: "bi-check-circle", color: "#16A34A", bg: "#E8F7F0" },
-  CANCELLED: { label: "Cancelled", icon: "bi-x-circle", color: "#DC2626", bg: "#FDECEC" },
+  ALL: { label: "All", short: "All", icon: "bi-list-ul", color: "#64748B", bg: "#EEF1F6" },
+  REQUESTED: { label: "Requested", short: "Req", icon: "bi-hourglass-split", color: "#F59E0B", bg: "#FEF3E2" },
+  SCHEDULED: { label: "Scheduled", short: "Sched", icon: "bi-calendar-check", color: "#6366F1", bg: "#EEF0FE" },
+  ASSIGNED: { label: "Assigned", short: "Asgn", icon: "bi-person-check", color: "#2563EB", bg: "#EAF1FE" },
+  EN_ROUTE: { label: "En Route", short: "Route", icon: "bi-truck", color: "#06B6D4", bg: "#E5F8FB" },
+  IN_PROGRESS: { label: "In Progress", short: "Prog", icon: "bi-play-fill", color: "#8B5CF6", bg: "#F1EBFE" },
+  COMPLETED: { label: "Completed", short: "Done", icon: "bi-check-circle", color: "#16A34A", bg: "#E8F7F0" },
+  CANCELLED: { label: "Cancelled", short: "Canc", icon: "bi-x-circle", color: "#DC2626", bg: "#FDECEC" },
 };
 
 // Fallback so an unexpected status can never crash the whole board.
@@ -229,9 +230,11 @@ export default function DispatchBoard() {
               key={key}
               onClick={() => setStatusFilter(key)}
               className={`dsb-tab ${isActive ? "active" : ""}`}
+              title={tab.label}
             >
               <i className={`bi ${tab.icon} tab-icon`}></i>
-              {tab.label}
+              <span className="tab-full">{tab.label}</span>
+              <span className="tab-short">{tab.short}</span>
               <span className="tab-count">{statusCounts[key]}</span>
             </button>
           );

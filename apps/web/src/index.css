@@ -22,15 +22,37 @@ body {
 }
 
 /* Sidebar */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
 .sidebar {
   width: 240px;
+  flex-shrink: 0;
   background: linear-gradient(180deg, #1c2333 0%, #171c29 100%);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sidebar-link {
   color: #9aa3b5;
   font-size: 0.9rem;
   text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
   transition: background-color 0.15s, color 0.15s;
 }
 
@@ -42,6 +64,78 @@ body {
 .sidebar-link.active {
   color: #fff;
   background-color: rgba(79, 109, 245, 0.25);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 0 8px;
+}
+
+/* Mobile: sidebar becomes a compact top bar (icons only) */
+@media (max-width: 767.98px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 12px;
+  }
+
+  .sidebar-brand {
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 2px;
+    margin-left: 8px;
+  }
+
+  .sidebar-link {
+    padding: 6px 10px;
+    font-size: 1rem;
+  }
+
+  .sidebar-footer {
+    margin: 0 0 0 auto;
+    padding: 0;
+  }
+
+  .sidebar-user {
+    display: none;
+  }
+}
+
+.sidebar-hide-sm {
+  /* hidden on phones via media query below */
+}
+
+@media (max-width: 767.98px) {
+  .sidebar-hide-sm {
+    display: none !important;
+  }
+}
+
+.app-main {
+  flex-grow: 1;
+  padding: 24px;
+  min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+  .app-main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .app-main {
+    padding: 14px 12px;
+  }
 }
 
 /* Initials avatar */
@@ -156,10 +250,10 @@ body {
   }
 }
 
-/* Status tabs */
+/* Status tabs: always one line, shrinking with the screen */
 .dsb-tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
 }
 
@@ -175,7 +269,12 @@ body {
   font-size: 0.83rem;
   font-weight: 500;
   white-space: nowrap;
+  min-width: 0;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dsb-tab .tab-short {
+  display: none;
 }
 
 .dsb-tab:hover {
@@ -205,6 +304,61 @@ body {
 .dsb-tab.active .tab-count {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
+}
+
+/* Tablet: tighter tabs, icons go, short labels, counts stay */
+@media (max-width: 991.98px) {
+  .dsb-tabs {
+    gap: 3px;
+  }
+
+  .dsb-tab {
+    padding: 4px 5px;
+    font-size: 0.65rem;
+    gap: 3px;
+  }
+
+  .dsb-tab .tab-icon {
+    display: none;
+  }
+
+  .dsb-tab .tab-full {
+    display: none;
+  }
+
+  .dsb-tab .tab-short {
+    display: inline;
+  }
+
+  .dsb-tab .tab-count {
+    padding: 0 4px;
+    font-size: 0.6rem;
+  }
+}
+
+/* Mobile: short labels only, counts hidden, minimal padding */
+@media (max-width: 575.98px) {
+  .dsb-tabs {
+    gap: 4px;
+  }
+
+  .dsb-tab {
+    padding: 5px 6px;
+    font-size: 0.66rem;
+    gap: 3px;
+  }
+
+  .dsb-tab .tab-full {
+    display: none;
+  }
+
+  .dsb-tab .tab-short {
+    display: inline;
+  }
+
+  .dsb-tab .tab-count {
+    display: none;
+  }
 }
 
 /* Job cards */
