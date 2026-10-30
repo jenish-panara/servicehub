@@ -1,0 +1,8 @@
+/* Small app-specific tweaks on top of Bootstrap */
+body {
+  background-color: #f5f6f8;
+}
+
+.board-column {
+  min-height: 300px;
+}

@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  DISPATCHER
+  TECHNICIAN
+}
+
+enum JobStatus {
+  REQUESTED
+  SCHEDULED
+  ASSIGNED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  INVOICED
+  PAID
+  CANCELLED
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users       User[]
+  technicians Technician[]
+  customers   Customer[]
+  jobs        Job[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  email        String
+  passwordHash String
+  name         String
+  role         Role     @default(OWNER)
+  createdAt    DateTime @default(now())
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+model Technician {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  name      String
+  phone     String
+  skills    String[] @default([])
+  zone      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  jobs Job[]
+
+  @@index([tenantId])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  name      String
+  phone     String
+  email     String?
+  address   String
+  createdAt DateTime @default(now())
+
+  jobs Job[]
+
+  @@index([tenantId])
+}
+
+model Job {
+  id           String    @id @default(uuid())
+  tenantId     String
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  customerId   String
+  customer     Customer  @relation(fields: [customerId], references: [id])
+  technicianId String?
+  technician   Technician? @relation(fields: [technicianId], references: [id])
+  title        String
+  description  String?
+  address      String
+  status       JobStatus @default(REQUESTED)
+  scheduledFor DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  photos   JobPhoto[]
+  invoice  Invoice?
+
+  @@index([tenantId, status])
+  @@index([technicianId])
+}
+
+model JobPhoto {
+  id        String   @id @default(uuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  url       String
+  kind      String   @default("after") // "before" | "after"
+  createdAt DateTime @default(now())
+
+  @@index([jobId])
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  tenantId  String
+  jobId     String   @unique
+  job       Job      @relation(fields: [jobId], references: [id])
+  number    String
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("INR")
+  paidAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, number])
+}

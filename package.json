@@ -1,0 +1,15 @@
+{
+  "name": "servicehub",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace @servicehub/api",
+    "dev:web": "npm run dev --workspace @servicehub/web",
+    "db:up": "docker compose up -d",
+    "db:migrate": "npm run prisma:migrate --workspace @servicehub/api",
+    "db:seed": "npm run prisma:seed --workspace @servicehub/api"
+  }
+}
