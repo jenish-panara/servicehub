@@ -89,6 +89,22 @@ body {
   background-color: #f6f8fc;
 }
 
+/* Column bodies in the "All" board view scroll internally, so the page
+   stays compact no matter how many jobs pile up */
+.board-body {
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.board-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.board-body::-webkit-scrollbar-thumb {
+  background: #d3d9e3;
+  border-radius: 3px;
+}
+
 .job-card {
   transition: box-shadow 0.15s, transform 0.15s;
 }

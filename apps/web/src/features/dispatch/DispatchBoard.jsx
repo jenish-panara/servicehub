@@ -37,6 +37,7 @@ export default function DispatchBoard() {
   const [actionError, setActionError] = useState(null);
   const [pendingJobId, setPendingJobId] = useState(null);
   const [assignJob, setAssignJob] = useState(null); // job being assigned in the modal
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const canDispatch = user?.role === "OWNER" || user?.role === "DISPATCHER";
 
@@ -110,6 +111,10 @@ export default function DispatchBoard() {
     return job.technicianId === techFilter;
   });
 
+  const statusCounts = Object.fromEntries(
+    STATUS_COLUMNS.map((status) => [status, visibleJobs.filter((j) => j.status === status).length])
+  );
+
   return (
     <div className="container-fluid p-4">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -156,6 +161,26 @@ export default function DispatchBoard() {
         </div>
       )}
 
+      {/* Status tabs */}
+      <div className="segmented mb-3 flex-wrap" role="group">
+        <button
+          onClick={() => setStatusFilter("all")}
+          className={statusFilter === "all" ? "active" : ""}
+        >
+          All <span className="opacity-75">({visibleJobs.length})</span>
+        </button>
+        {STATUS_COLUMNS.map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={statusFilter === status ? "active" : ""}
+          >
+            {status.replace("_", " ")}{" "}
+            <span className="opacity-75">({statusCounts[status]})</span>
+          </button>
+        ))}
+      </div>
+
       {loading && jobs.length === 0 && (
         <div className="text-center text-muted py-5">
           <div className="spinner-border spinner-border-sm me-2"></div>
@@ -163,7 +188,8 @@ export default function DispatchBoard() {
         </div>
       )}
 
-      {/* 3 columns per row, wrapping, page scrolls vertically */}
+      {statusFilter === "all" ? (
+      /* 3 columns per row, wrapping, page scrolls vertically */
       <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
         {STATUS_COLUMNS.map((status) => {
           const columnJobs = visibleJobs.filter((j) => j.status === status);
@@ -181,7 +207,7 @@ export default function DispatchBoard() {
                   </span>
                 </div>
 
-                <div className="d-flex flex-column gap-2 p-2">
+                <div className="d-flex flex-column gap-2 p-2 board-body">
                   {columnJobs.map((job) => (
                     <div className="card border shadow-sm job-card" key={job.id}>
                       <div className="card-body p-3">
@@ -256,6 +282,82 @@ export default function DispatchBoard() {
           );
         })}
       </div>
+      ) : (
+      /* Single status selected: compact wide rows */
+      <div className="card border-0 shadow-sm">
+        <div className="card-body p-2">
+          {visibleJobs.filter((j) => j.status === statusFilter).length === 0 ? (
+            <div className="text-center text-muted py-5">
+              <i className="bi bi-inbox d-block fs-2 mb-2"></i>
+              No {statusFilter.replace("_", " ").toLowerCase()} jobs
+              {techFilter !== "all" ? " for this technician" : ""}.
+            </div>
+          ) : (
+            visibleJobs
+              .filter((j) => j.status === statusFilter)
+              .map((job) => (
+                <div className="card border shadow-sm job-card mb-2" key={job.id}>
+                  <div className="card-body p-3 d-flex flex-wrap align-items-center gap-3">
+                    <div className="flex-grow-1" style={{ minWidth: 200 }}>
+                      <div className="fw-semibold small">{job.title}</div>
+                      <div className="text-muted" style={{ fontSize: "0.78rem" }}>
+                        <i className="bi bi-person me-1"></i>
+                        {job.customer?.name}
+                        <span className="mx-1">·</span>
+                        <i className="bi bi-geo-alt me-1"></i>
+                        {job.address}
+                      </div>
+                    </div>
+                    <div>
+                      {job.technician ? (
+                        <span className="assigned-chip">
+                          <i className="bi bi-tools me-1"></i>
+                          {job.technician.name}
+                        </span>
+                      ) : canDispatch && ASSIGNABLE_STATUSES.includes(job.status) ? (
+                        <button
+                          onClick={() => setAssignJob(job)}
+                          disabled={pendingJobId === job.id}
+                          className="btn btn-sm btn-outline-primary"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          <i className="bi bi-person-plus me-1"></i>
+                          Assign
+                        </button>
+                      ) : (
+                        <span className="text-muted" style={{ fontSize: "0.78rem" }}>
+                          Unassigned
+                        </span>
+                      )}
+                    </div>
+                    <span className={`badge ${COLUMN_STYLES[statusFilter].badge}`}>
+                      {statusFilter.replace("_", " ")}
+                    </span>
+                    <div className="d-flex flex-wrap gap-1">
+                      {metaNext(statusFilter).map((next) => {
+                        const action = ACTION_LABELS[next];
+                        if (!action) return null;
+                        return (
+                          <button
+                            key={next}
+                            onClick={() => changeStatus(job, next)}
+                            disabled={pendingJobId === job.id}
+                            className={`btn btn-sm border ${action.class}`}
+                            style={{ fontSize: "0.72rem", padding: "2px 8px" }}
+                          >
+                            <i className={`bi ${action.icon} me-1`}></i>
+                            {action.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+      </div>
+      )}
 
       {assignJob && (
         <AssignModal
