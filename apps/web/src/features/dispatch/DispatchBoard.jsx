@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
-import { avatarColor, initials, formatDate } from "../../lib/ui.js";
+import { initials, formatDate } from "../../lib/ui.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import AssignModal from "./AssignModal.jsx";
 import JobDetailsDrawer from "./JobDetailsDrawer.jsx";
@@ -15,12 +15,12 @@ const STATUS_COLUMNS = [
   "CANCELLED",
 ];
 
-// Status dot colors + labels.
+// Status dot colors + labels (subtle enterprise palette).
 const STATUS_META = {
   ALL: { label: "All", short: "All", color: "#64748B" },
-  REQUESTED: { label: "Requested", short: "Req", color: "#F59E0B" },
-  SCHEDULED: { label: "Scheduled", short: "Sched", color: "#6366F1" },
-  ASSIGNED: { label: "Assigned", short: "Asgn", color: "#2563EB" },
+  REQUESTED: { label: "Requested", short: "Req", color: "#64748B" },
+  SCHEDULED: { label: "Scheduled", short: "Sched", color: "#2563EB" },
+  ASSIGNED: { label: "Assigned", short: "Asgn", color: "#F59E0B" },
   EN_ROUTE: { label: "En Route", short: "Route", color: "#06B6D4" },
   IN_PROGRESS: { label: "In Progress", short: "Prog", color: "#8B5CF6" },
   COMPLETED: { label: "Completed", short: "Done", color: "#16A34A" },
@@ -317,10 +317,7 @@ export default function DispatchBoard() {
               <div className="cm-right">
                 {job.technician ? (
                   <div className="d-flex align-items-center gap-2">
-                    <span
-                      className="tech-avatar"
-                      style={{ backgroundColor: avatarColor(job.technician.name) }}
-                    >
+                    <span className="tech-avatar">
                       {initials(job.technician.name)}
                     </span>
                     <div>

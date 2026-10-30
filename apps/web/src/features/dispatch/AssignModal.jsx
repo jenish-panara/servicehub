@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { avatarColor, initials } from "../../lib/ui.js";
+import { initials } from "../../lib/ui.js";
 
 /**
  * Assignment wizard: pick a technician for a job, filtered by name,
@@ -109,7 +109,7 @@ export default function AssignModal({ job, technicians, busy, onClose, onAssign 
                     key={tech.id}
                     className="list-group-item px-2 py-3 d-flex align-items-center gap-3 assign-row"
                   >
-                    <span className="avatar" style={{ backgroundColor: avatarColor(tech.name) }}>
+                    <span className="avatar">
                       {initials(tech.name)}
                     </span>
                     <div className="flex-grow-1">

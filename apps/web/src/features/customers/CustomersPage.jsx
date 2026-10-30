@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
-import { avatarColor, initials, formatDate } from "../../lib/ui.js";
+import { initials, formatDate } from "../../lib/ui.js";
 import PageHeader from "../../components/PageHeader.jsx";
 
 const EMPTY_FORM = { name: "", phone: "", email: "", address: "" };
@@ -88,10 +88,7 @@ export default function CustomersPage() {
                 <tr key={customer.id}>
                   <td className="ps-4">
                     <div className="d-flex align-items-center gap-2">
-                      <span
-                        className="avatar"
-                        style={{ backgroundColor: avatarColor(customer.name) }}
-                      >
+                      <span className="avatar">
                         {initials(customer.name)}
                       </span>
                       <div>

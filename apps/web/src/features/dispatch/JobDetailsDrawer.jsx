@@ -1,4 +1,4 @@
-import { avatarColor, initials, formatDate } from "../../lib/ui.js";
+import { initials, formatDate } from "../../lib/ui.js";
 
 /**
  * Right-side drawer with full job details. Pure presentation — all actions
@@ -72,10 +72,7 @@ export default function JobDetailsDrawer({
             <span className="drawer-value">
               {job.technician ? (
                 <span className="d-inline-flex align-items-center gap-2">
-                  <span
-                    className="tech-avatar"
-                    style={{ backgroundColor: avatarColor(job.technician.name), width: 26, height: 26, fontSize: "0.6rem" }}
-                  >
+                  <span className="tech-avatar">
                     {initials(job.technician.name)}
                   </span>
                   {job.technician.name}

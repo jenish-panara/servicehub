@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
-import { avatarColor, initials } from "../../lib/ui.js";
+import { initials } from "../../lib/ui.js";
 import PageHeader from "../../components/PageHeader.jsx";
 import { FormModal } from "../customers/CustomersPage.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -187,10 +187,7 @@ export default function TechniciansPage() {
                 <tr key={technician.id} className={technician.isActive ? "" : "row-inactive"}>
                   <td className="ps-4">
                     <div className="d-flex align-items-center gap-2">
-                      <span
-                        className="avatar"
-                        style={{ backgroundColor: avatarColor(technician.name) }}
-                      >
+                      <span className="avatar">
                         {initials(technician.name)}
                       </span>
                       <span className="fw-medium">{technician.name}</span>

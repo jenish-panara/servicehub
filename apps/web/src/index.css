@@ -138,18 +138,22 @@ body {
   }
 }
 
-/* Initials avatar */
-.avatar {
-  width: 36px;
-  height: 36px;
+/* Initials avatars — uniform, subtle, circular */
+.avatar,
+.tech-avatar {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #fff;
+  background: #eef2f7;
+  color: #1e293b;
+  border: 1px solid #dbe3ec;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
 }
 
 /* Icon square in page headers */
@@ -411,7 +415,7 @@ body {
 .cm-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex: 1 1 auto;
   justify-content: flex-end;
 }
@@ -436,13 +440,14 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
+  color: var(--sh-text-2);
   white-space: nowrap;
 }
 
 .cm-status .bi-circle-fill {
-  font-size: 0.4rem;
+  font-size: 6px;
 }
 
 .cm-actions {
@@ -454,10 +459,13 @@ body {
 .btn-min {
   border: 1px solid var(--sh-border);
   background: var(--sh-card);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 6px 12px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
   color: var(--sh-text-2);
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -564,6 +572,14 @@ body {
     padding: 16px;
   }
 
+  /* flex-basis values from the desktop row become heights in column
+     layout — reset them so sections keep their natural size */
+  .cm-left,
+  .cm-mid,
+  .cm-right {
+    flex: 0 0 auto;
+  }
+
   .cm-right {
     justify-content: space-between;
   }
@@ -640,6 +656,13 @@ body {
 .drawer-footer {
   padding: 16px 24px;
   border-top: 1px solid var(--sh-border);
+}
+
+/* Drawer row avatars are slightly smaller */
+.drawer-value .tech-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.58rem;
 }
 
 /* Stat cards */
