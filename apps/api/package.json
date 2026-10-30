@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.16.0",
@@ -22,6 +23,7 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
-    "prisma": "^6.16.0"
+    "prisma": "^6.16.0",
+    "vitest": "^3.2.4"
   }
 }

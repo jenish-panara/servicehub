@@ -45,5 +45,8 @@ jobs:
       - name: Check migrations apply cleanly
         run: npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
 
+      - name: Run API tests
+        run: npm test --workspace @servicehub/api
+
       - name: Build web
         run: npm run build --workspace @servicehub/web

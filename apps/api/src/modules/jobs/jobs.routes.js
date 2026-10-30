@@ -2,10 +2,30 @@ import { Router } from "express";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { AppError } from "../../middleware/errors.js";
+import { JOB_TRANSITIONS } from "./job.transitions.js";
 import { listJobs, getJob, createJob, updateStatus, assignTechnician } from "./jobs.service.js";
+import { listTechnicians } from "../technicians/technicians.service.js";
 
 const router = Router();
 router.use(requireAuth);
+
+// Must be registered before /:id so "meta" isn't parsed as an id.
+router.get("/meta", async (req, res, next) => {
+  try {
+    const technicians = await listTechnicians(req, { active: "true" });
+    res.json({
+      transitions: JOB_TRANSITIONS,
+      technicians: technicians.map((t) => ({
+        id: t.id,
+        name: t.name,
+        skills: t.skills,
+        zone: t.zone,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 const createJobSchema = z.object({
   customerId: z.string().uuid(),

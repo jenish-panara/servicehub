@@ -57,6 +57,16 @@ body {
   min-height: 300px;
 }
 
+.board-scroll {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.board-col {
+  width: 250px;
+  flex-shrink: 0;
+}
+
 .job-card {
   transition: box-shadow 0.15s, transform 0.15s;
 }
