@@ -62,7 +62,6 @@ export default function DispatchBoard() {
   const [pendingJobId, setPendingJobId] = useState(null);
   const [assignJob, setAssignJob] = useState(null);
   const [detailJob, setDetailJob] = useState(null);
-  const [menuJobId, setMenuJobId] = useState(null);
 
   const canDispatch = user?.role === "OWNER" || user?.role === "DISPATCHER";
 
@@ -387,7 +386,7 @@ export default function DispatchBoard() {
                   </span>
                 </div>
 
-                {/* F. Actions: primary button + ⋯ menu */}
+                {/* F. Actions: primary button + eye button for details */}
                 <div className="jc-section jc-actions" onClick={(e) => e.stopPropagation()}>
                   {(() => {
                     const primary = primaryAction(job);
@@ -417,40 +416,9 @@ export default function DispatchBoard() {
                     }
                     return null;
                   })()}
-                  <div className="menu-wrap">
-                    <button
-                      className="btn-dots"
-                      title="More actions"
-                      onClick={() => setMenuJobId(menuJobId === job.id ? null : job.id)}
-                    >
-                      <i className="bi bi-three-dots"></i>
-                    </button>
-                    {menuJobId === job.id && (
-                      <>
-                        <div className="menu-backdrop" onClick={() => setMenuJobId(null)} />
-                        <div className="menu-pop">
-                          {menuActions(job).map((s) => {
-                            const action = ACTION_LABELS[s];
-                            return (
-                              <button
-                                key={s}
-                                className={action.danger ? "menu-danger" : ""}
-                                onClick={() => changeStatus(job, s)}
-                              >
-                                <i
-                                  className={`bi ${action.danger ? "bi-x-circle" : "bi-arrow-right-circle"}`}
-                                ></i>
-                                {action.label}
-                              </button>
-                            );
-                          })}
-                          <button onClick={() => { setMenuJobId(null); setDetailJob(job); }}>
-                            <i className="bi bi-info-circle"></i>View details
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <button className="btn-eye" title="View details" onClick={() => setDetailJob(job)}>
+                    <i className="bi bi-eye"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -473,6 +441,7 @@ export default function DispatchBoard() {
           job={jobs.find((j) => j.id === detailJob.id) || detailJob}
           canDispatch={canDispatch}
           pending={pendingJobId === detailJob.id}
+          secondary={menuActions(detailJob)}
           onClose={() => setDetailJob(null)}
           onAssignClick={() => {
             const job = detailJob;

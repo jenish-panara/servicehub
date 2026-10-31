@@ -10,6 +10,7 @@ export default function JobDetailsDrawer({
   job,
   canDispatch,
   pending,
+  secondary = [], // legal next statuses not shown as the card's primary button
   onClose,
   onAssignClick,
   onChangeStatus,
@@ -197,11 +198,32 @@ export default function JobDetailsDrawer({
           </div>
         </div>
 
-        {assignVisible && (
+        {(assignVisible || secondary.length > 0) && (
           <div className="drawer-footer">
-            <button className="btn-min btn-min-primary w-100" disabled={pending} onClick={onAssignClick}>
-              <i className="bi bi-person-plus me-1"></i>Assign technician
-            </button>
+            {assignVisible && (
+              <button className="btn-min btn-min-primary w-100" disabled={pending} onClick={onAssignClick}>
+                <i className="bi bi-person-plus me-1"></i>Assign technician
+              </button>
+            )}
+            {secondary.length > 0 && (
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                {secondary.map((s) => (
+                  <button
+                    key={s}
+                    className={`btn-min flex-grow-1 ${s === "CANCELLED" ? "text-danger" : ""}`}
+                    disabled={pending}
+                    onClick={() => onChangeStatus(s)}
+                  >
+                    {s === "CANCELLED" ? (
+                      <i className="bi bi-x-circle me-1"></i>
+                    ) : (
+                      <i className="bi bi-arrow-right-circle me-1"></i>
+                    )}
+                    {s.replace("_", " ")}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </aside>

@@ -519,70 +519,62 @@ body {
   color: var(--sh-text-2);
 }
 
-/* Three-dot menu */
-.menu-wrap {
-  position: relative;
-}
-
-.btn-dots {
-  border: none;
-  background: transparent;
+/* Eye button: opens the details drawer */
+.btn-eye {
+  border: 1px solid var(--sh-border);
+  background: var(--sh-card);
   color: var(--sh-text-2);
-  border-radius: 8px;
-  width: 30px;
-  height: 30px;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.btn-dots:hover {
-  background: #f1f5f9;
-  color: var(--sh-text);
+.btn-eye:hover {
+  color: var(--sh-blue);
+  border-color: var(--sh-blue);
+  background: #eef2ff;
 }
 
-.menu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-}
-
-.menu-pop {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 1001;
-  background: var(--sh-card);
+/* Drawer footer action buttons */
+.btn-min {
   border: 1px solid var(--sh-border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
-  min-width: 160px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu-pop button {
-  border: none;
-  background: transparent;
-  text-align: left;
-  font-size: 0.8rem;
-  color: var(--sh-text);
-  padding: 7px 10px;
+  background: var(--sh-card);
   border-radius: 6px;
-  display: flex;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  min-height: 32px;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  justify-content: center;
+  color: var(--sh-text-2);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.menu-pop button:hover {
-  background: #f1f5f9;
+.btn-min:hover:not(:disabled) {
+  color: var(--sh-text);
+  border-color: #cbd5e1;
 }
 
-.menu-pop button.menu-danger {
-  color: var(--sh-red);
+.btn-min:disabled {
+  opacity: 0.55;
+}
+
+.btn-min-primary {
+  background: var(--sh-blue);
+  border-color: var(--sh-blue);
+  color: #fff;
+}
+
+.btn-min-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
 }
 
 /* Details drawer */
